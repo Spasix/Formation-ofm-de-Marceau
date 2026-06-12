@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Formation OFM Manager</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0F0F1A; color: #fff; font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+  button { cursor: pointer; font-family: inherit; }
+
+  /* Hero */
+  #hero {
+    background: linear-gradient(135deg, #1e1b4b 0%, #1e3a5f 50%, #0f172a 100%);
+    padding: 32px 20px 24px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  #hero .eyebrow { font-size: 13px; color: #7C3AED; font-weight: 700; letter-spacing: 2px; margin-bottom: 8px; text-transform: uppercase; }
+  #hero h1 {
+    font-size: 28px; font-weight: 900; margin: 0 0 8px;
+    background: linear-gradient(135deg, #fff, #a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  #hero p { color: #9CA3AF; font-size: 14px; margin: 0 0 20px; }
+  #progress-wrap { max-width: 320px; margin: 0 auto; }
+  #progress-labels { display: flex; justify-content: space-between; font-size: 12px; color: #9CA3AF; margin-bottom: 6px; }
+  #progress-labels span:last-child { color: #7C3AED; font-weight: 700; }
+  #progress-track { background: #2A2A3E; border-radius: 100px; height: 8px; overflow: hidden; }
+  #progress-bar { height: 100%; border-radius: 100px; background: linear-gradient(90deg, #7C3AED, #06B6D4); width: 0%; transition: width 0.4s ease; }
+
+  /* Stats */
+  #stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: #2A2A3E; }
+  .stat { background: #1A1A2E; padding: 12px 8px; text-align: center; }
+  .stat-val { font-size: 22px; font-weight: 900; color: #7C3AED; }
+  .stat-lbl { font-size: 11px; color: #6B7280; }
+
+  /* Modules list */
+  #modules-list { padding: 20px 16px; }
+  #modules-list h2 { font-size: 14px; color: #6B7280; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; }
+  .module-card {
+    background: #1A1A2E; border-radius: 16px; margin-bottom: 12px; overflow: hidden;
+    cursor: pointer; border: 1px solid rgba(255,255,255,0.06);
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .module-card:hover { transform: translateY(-2px); }
+  .module-card.done { border-color: #059669; }
+  .module-inner { display: flex; align-items: center; padding: 16px; }
+  .module-icon {
+    width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center;
+    justify-content: center; font-size: 26px; margin-right: 14px; flex-shrink: 0;
+  }
+  .module-meta { flex: 1; min-width: 0; }
+  .module-tag { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+  .module-done-badge { font-size: 11px; color: #059669; background: #1e3a2e; padding: 1px 7px; border-radius: 100px; }
+  .module-title { font-weight: 700; font-size: 16px; color: #fff; margin-bottom: 2px; }
+  .module-sub { font-size: 12px; color: #6B7280; }
+  .module-count { text-align: right; flex-shrink: 0; margin-left: 12px; }
+  .module-count-val { font-size: 13px; font-weight: 700; color: #4B5563; }
+  .module-count-lbl { font-size: 10px; color: #4B5563; }
+  .module-progress { height: 3px; background: #2A2A3E; }
+  .module-progress-fill { height: 100%; transition: width 0.3s; }
+  #list-footer { padding: 16px 20px 32px; text-align: center; }
+  #list-footer p { font-size: 12px; color: #374151; }
+
+  /* Lesson view */
+  #lesson-view { display: none; min-height: 100vh; }
+  #lesson-header { padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+  #lesson-header button { background: rgba(255,255,255,0.2); border: none; color: #fff; border-radius: 8px; padding: 6px 12px; font-size: 14px; }
+  #lesson-header-text .eyebrow { font-size: 12px; opacity: 0.8; }
+  #lesson-header-text .title { font-weight: 700; font-size: 16px; }
+  #lesson-nav { display: flex; gap: 6px; padding: 12px 20px; background: #1A1A2E; }
+  .lesson-nav-btn {
+    flex: 1; padding: 8px 4px; border-radius: 8px; border: none;
+    color: #888; background: #2A2A3E; font-size: 11px; font-weight: 600;
+  }
+  #lesson-content { padding: 24px 20px; max-width: 680px; margin: 0 auto; }
+  #lesson-content h2 { font-size: 22px; font-weight: 800; margin-bottom: 20px; color: #fff; }
+  #lesson-body {
+    background: #1A1A2E; border-radius: 16px; padding: 24px; margin-bottom: 20px;
+    border-left: 4px solid #7C3AED; line-height: 1.8;
+  }
+  #lesson-body p { margin: 4px 0; font-size: 14px; color: #D1D5DB; }
+  #lesson-body p.empty { margin: 12px 0; }
+  #lesson-tip {
+    background: linear-gradient(135deg, #1e1b4b, #1e3a5f); border-radius: 12px;
+    padding: 16px; margin-bottom: 24px; border: 1px solid rgba(255,255,255,0.1);
+  }
+  #lesson-tip p { font-size: 13px; color: #E0F2FE; line-height: 1.7; }
+  #lesson-actions { display: flex; gap: 12px; }
+  #btn-prev { padding: 12px 20px; border-radius: 10px; border: none; background: #2A2A3E; color: #fff; font-size: 14px; }
+  #btn-prev:disabled { opacity: 0.4; cursor: not-allowed; }
+  #btn-done { flex: 1; padding: 12px 20px; border-radius: 10px; border: none; background: linear-gradient(135deg, #059669, #047857); color: #fff; font-size: 14px; font-weight: 700; }
+  #btn-next { flex: 1; padding: 12px 20px; border-radius: 10px; border: none; color: #fff; font-size: 14px; font-weight: 700; }
+  #btn-finish { flex: 1; padding: 12px 20px; border-radius: 10px; border: none; background: linear-gradient(135deg, #7C3AED, #5B21B6); color: #fff; font-size: 14px; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<!-- HOME VIEW -->
+<div id="home-view">
+  <div id="hero">
+    <div class="eyebrow">⚡ Formation Complète</div>
+    <h1>OFM Manager</h1>
+    <p>De zéro à ta première agence OnlyFans</p>
+    <div id="progress-wrap">
+      <div id="progress-labels">
+        <span id="lbl-count">0/18 leçons</span>
+        <span id="lbl-pct">0%</span>
+      </div>
+      <div id="progress-track"><div id="progress-bar"></div></div>
+    </div>
+  </div>
+
+  <div id="stats">
+    <div class="stat"><div class="stat-val">6</div><div class="stat-lbl">Modules</div></div>
+    <div class="stat"><div class="stat-val">18</div><div class="stat-lbl">Leçons</div></div>
+    <div class="stat"><div class="stat-val" id="stat-done">0</div><div class="stat-lbl">Terminées</div></div>
+  </div>
+
+  <div id="modules-list">
+    <h2>Programme de la formation</h2>
+    <div id="module-cards"></div>
+  </div>
+
+  <div id="list-footer"><p>🎯 Formation OFM Manager · Clique sur un module pour commencer</p></div>
+</div>
+
+<!-- LESSON VIEW -->
+<div id="lesson-view">
+  <div id="lesson-header">
+    <button onclick="goHome()">← Retour</button>
+    <div id="lesson-header-text">
+      <div class="eyebrow" id="lh-module"></div>
+      <div class="title" id="lh-title"></div>
+    </div>
+  </div>
+  <div id="lesson-nav"></div>
+  <div id="lesson-content">
+    <h2 id="lc-title"></h2>
+    <div id="lesson-body"></div>
+    <div id="lesson-tip"><p id="lc-tip"></p></div>
+    <div id="lesson-actions">
+      <button id="btn-prev" onclick="prevLesson()">← Précédent</button>
+      <button id="btn-done" onclick="markDone()">✓ Marquer comme terminé</button>
+      <button id="btn-next" onclick="nextLesson()" style="display:none">Leçon suivante →</button>
+      <button id="btn-finish" onclick="goHome()" style="display:none">🎉 Module terminé !</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const modules = [
+  {
+    id: 1, emoji: "🧠", title: "Comprendre l'OFM", subtitle: "Les bases du métier", color: "#7C3AED",
+    lessons: [
+      {
+        title: "C'est quoi l'OFM ?",
+        content: `L'OFM (OnlyFans Management) consiste à gérer les comptes OnlyFans de créateurs de contenu en échange d'une commission sur leurs revenus.
+
+En tant que manager, tu prends en charge tout ce que le modèle ne veut pas ou ne sait pas faire :
+• La stratégie marketing
+• La réponse aux abonnés (chatting)
+• La promotion sur les réseaux sociaux
+• L'optimisation des prix et des offres
+• Les statistiques et l'analyse des performances
+
+Le modèle, lui, se concentre uniquement sur la création de contenu (photos/vidéos).`,
+        tip: "💡 Le manager est un chef d'entreprise, pas juste un assistant. Tu gères un business."
+      },
+      {
+        title: "Comment tu gagnes de l'argent ?",
+        content: `Il existe deux modèles économiques principaux :
+
+📌 Commission sur les revenus (le plus courant)
+Tu prends entre 15% et 40% des revenus mensuels du modèle.
+Exemple : Un modèle génère 5 000€/mois → tu touches 1 000€ (à 20%).
+
+📌 Forfait mensuel
+Tu factures un montant fixe chaque mois (entre 500€ et 2 000€).
+Ce modèle est plus rare et réservé aux managers expérimentés.
+
+🔑 Conseil : Démarre à 20-25% avec tes premiers modèles. N'aie pas peur de baisser légèrement au départ pour construire ton portfolio.`,
+        tip: "💡 Avec 3-4 modèles qui génèrent chacun 3 000€/mois à 25%, tu atteins 2 250€/mois."
+      },
+      {
+        title: "La réalité du marché",
+        content: `Avant de te lancer, comprends bien le marché :
+
+✅ Les opportunités
+• Plus de 3 millions de créateurs sur OnlyFans dans le monde
+• En France, environ 70 000 créateurs actifs
+• La majorité des gros comptes (10 000€+/mois) travaillent avec une agence
+• Le marché est en croissance constante
+
+⚠️ Les réalités à connaître
+• La majorité des modèles gagnent moins de 200€/mois
+• Les premières semaines sont difficiles (recrutement, crédibilité zéro)
+• Il faut compter 1-2 mois avant les premiers vrais revenus
+• La concurrence augmente rapidement
+
+🎯 Le profil idéal d'un modèle à recruter : déjà présent sur Instagram/TikTok avec 5 000+ abonnés, mais qui n'a pas encore monétisé sérieusement.`,
+        tip: "💡 Cherche des créateurs qui ont une audience mais pas encore de stratégie. C'est là que tu apportes le plus de valeur."
+      }
+    ]
+  },
+  {
+    id: 2, emoji: "⚖️", title: "Se lancer légalement", subtitle: "Structure ton activité", color: "#0891B2",
+    lessons: [
+      {
+        title: "Quel statut juridique choisir ?",
+        content: `Avant de signer un seul contrat, il faut être en règle. En France, tu as 2 options principales :
+
+📋 Auto-entrepreneur (Micro-entreprise)
+• Simple à créer (quelques minutes sur autoentrepreneur.urssaf.fr)
+• Pas de TVA jusqu'à 36 800€ de CA
+• Charges sociales : ~22% du chiffre d'affaires
+• Idéal pour débuter
+
+🏢 SASU / SAS
+• Plus de protection personnelle
+• Optimisation fiscale possible
+• Conseillé à partir de 3 000-4 000€/mois de revenus
+• Nécessite un comptable
+
+👉 Commence en auto-entrepreneur. Simple, rapide, et tu peux toujours évoluer.`,
+        tip: "💡 Déclare ton activité sous le code APE 7490B (Autres activités professionnelles) ou 6399Z (Portails internet)."
+      },
+      {
+        title: "Le contrat avec le modèle",
+        content: `Un contrat est INDISPENSABLE pour travailler avec un modèle. Il protège les deux parties.
+
+📄 Ce que le contrat doit inclure :
+
+1. Identité des deux parties
+2. Durée du contrat (recommandé : 3 mois renouvelables)
+3. Pourcentage de commission (ex: 25%)
+4. Modalités de paiement (quand, comment)
+5. Droits d'accès au compte (qui gère quoi)
+6. Clause de confidentialité
+7. Conditions de rupture du contrat
+8. Responsabilités de chaque partie
+
+⚠️ Points importants :
+• Ne jamais travailler sans contrat signé
+• Préciser clairement qui détient les accès au compte
+• Inclure une clause anti-concurrence (le modèle ne peut pas changer d'agence pendant X mois)
+• Fais relire par un juriste si le modèle génère plus de 2 000€/mois`,
+        tip: "💡 Des modèles de contrats OFM existent en ligne. Adapte-les à ta situation. Ne copie jamais un contrat sans le comprendre."
+      },
+      {
+        title: "Fiscalité et comptabilité",
+        content: `Gérer ses finances dès le début évite les mauvaises surprises.
+
+💰 En auto-entrepreneur :
+• Tu déclares ton CA chaque mois ou trimestre sur le site de l'URSSAF
+• Tu payes ~22% de charges sociales sur ce que tu encaisses
+• Garde tous tes justificatifs de paiement
+
+🏦 Pratique :
+• Ouvre un compte bancaire dédié à ton activité (Qonto, Shine, Revolut Business)
+• Utilise un tableur ou un logiciel (Tiime, Freebe) pour suivre tes revenus
+• Facture toujours le modèle avec une vraie facture (numéro, date, montant HT, TVA si applicable)
+
+📊 Exemple de facture mensuelle :
+Prestation de gestion de compte OnlyFans - Mois de juin 2026
+Commission 25% sur 4 000€ de revenus = 1 000€ HT`,
+        tip: "💡 Mets de côté 30% de chaque paiement reçu pour tes impôts et charges. Tu éviteras les mauvaises surprises."
+      }
+    ]
+  },
+  {
+    id: 3, emoji: "🎯", title: "Recruter tes modèles", subtitle: "Trouver et convaincre", color: "#DC2626",
+    lessons: [
+      {
+        title: "Où trouver des modèles ?",
+        content: `Le recrutement est l'étape la plus difficile pour un débutant. Voici les meilleures sources :
+
+📱 Instagram (le plus efficace)
+• Cherche des créateurs avec 5K-50K abonnés dans les niches : fitness, lifestyle, beauté, gaming
+• Utilise les hashtags : #onlyfans, #créateurdecontenu, #contentcreator
+• Regarde qui interagit avec d'autres créateurs OF
+
+🎵 TikTok
+• Les créateurs qui font du contenu suggestif mais ne monétisent pas encore
+• Ceux qui mentionnent "link in bio" mais sans OF
+
+💬 Reddit / Discord
+• Subreddits dédiés aux créateurs OF cherchant un manager
+• Serveurs Discord spécialisés dans le contenu digital
+
+👥 Ton réseau personnel
+• Le moyen le plus simple pour débuter
+• Quelqu'un que tu connais qui voudrait se lancer`,
+        tip: "💡 Concentre-toi sur des créateurs qui ont déjà une audience engagée, même petite. Un compte de 10K abonnés engagés vaut plus qu'un de 100K abonnés passifs."
+      },
+      {
+        title: "Comment approcher un modèle ?",
+        content: `L'approche est cruciale. La plupart des managers débutants font les mêmes erreurs.
+
+❌ Ce qu'il ne faut PAS faire :
+• Envoyer un DM générique "Je suis manager, intéressé ?"
+• Parler d'argent dès le premier message
+• Être trop insistant
+• Aborder le sujet de façon vulgaire ou déplacée
+
+✅ Ce qui fonctionne :
+
+Message d'approche en 3 étapes :
+
+1️⃣ Créer le lien (message 1)
+"Salut [prénom], j'aime vraiment ton contenu sur [sujet précis]. Ton [post/reel/vidéo] sur X m'a vraiment parlé."
+
+2️⃣ Montrer la valeur (message 2)
+"Je travaille dans le management de créateurs de contenu. J'ai remarqué que tu pourrais maximiser tes revenus avec une vraie stratégie. Je ne vends rien, je voulais juste partager quelques idées si ça t'intéresse."
+
+3️⃣ La proposition (message 3, si intérêt)
+"On pourrait faire un appel de 20 min ? Je te montre concrètement ce que je pourrais faire pour ton compte."`,
+        tip: "💡 Envoie 20-30 approches par semaine minimum. Le taux de conversion est faible au début, c'est normal. C'est un jeu de nombres."
+      },
+      {
+        title: "L'appel de closing",
+        content: `Une fois qu'un modèle est intéressé, tu dois le convaincre lors d'un appel. Voici comment le structurer :
+
+📞 Structure d'un appel réussi (20-30 minutes)
+
+⏱️ Minutes 0-5 : Rapport & écoute
+→ Qui est le modèle ? Qu'est-ce qui lui plaît dans le contenu ? Quels sont ses objectifs ?
+
+⏱️ Minutes 5-15 : Diagnostic
+→ Analyse de son compte actuel (si OF) ou de son audience (si pas encore sur OF)
+→ Identifie 2-3 problèmes concrets : manque de stratégie, pas de promotion, prix mal calibrés...
+
+⏱️ Minutes 15-25 : La proposition
+→ Montre exactement ce que TU vas faire
+→ Donne un exemple concret de résultat possible : "Avec une audience de 8K Instagram engagée, on peut viser 1 500-2 500€/mois les 3 premiers mois"
+
+⏱️ Minutes 25-30 : Les conditions
+→ Présente le contrat simplement
+→ Réponds aux questions
+→ Fixe une date pour signer
+
+🎯 Objectif : Que le modèle signe dans les 48h suivant l'appel.`,
+        tip: "💡 Ne promet jamais de chiffres irréalistes. Sous-promets et sur-livre. C'est ce qui construit ta réputation."
+      }
+    ]
+  },
+  {
+    id: 4, emoji: "💬", title: "Le Chatting", subtitle: "L'art de convertir", color: "#059669",
+    lessons: [
+      {
+        title: "C'est quoi le chatting ?",
+        content: `Le chatting représente 60-80% des revenus d'un compte OnlyFans. C'est l'art de communiquer avec les abonnés pour les engager et les inciter à acheter.
+
+En tant que manager, tu gères les conversations à la place du modèle (avec son accord, bien sûr).
+
+💰 Les sources de revenus via le chatting :
+• Les abonnements (revenus fixes)
+• Les PPV (Pay Per View) : contenu exclusif envoyé en DM contre paiement
+• Les tips (pourboires) : abonnés qui envoient de l'argent spontanément
+• Les demandes personnalisées : contenu fait sur mesure (très bien payé)
+• Les packs : vendre des archives de contenu en lot
+
+🎯 Ton objectif en tant que chatteur :
+Construire une vraie relation avec chaque abonné pour qu'il dépense plus et reste plus longtemps abonné.`,
+        tip: "💡 Le meilleur chatteur n'est pas celui qui vend le plus agressivement, mais celui qui crée le lien le plus authentique."
+      },
+      {
+        title: "Techniques de chatting efficaces",
+        content: `Voici les techniques qui fonctionnent le mieux pour maximiser les revenus :
+
+🔥 La personalisation
+• Retiens le prénom et des détails sur chaque abonné
+• Réfère-toi à des conversations précédentes : "Tu m'avais dit que tu aimais..."
+• Chaque message doit sembler unique, jamais copié-collé
+
+💎 La technique du PPV
+1. Crée du désir sans tout montrer
+2. Envoie un message teaser : "J'ai filmé quelque chose de spécial ce matin, je te l'envoie ?"
+3. Fixe un prix adapté (5-20€ pour un PPV standard)
+4. Si refus : propose un contenu différent, moins cher
+
+🎁 Les tips
+• Remercie chaleureusement chaque tip, même petit
+• Crée des occasions spéciales : "C'est mon anniversaire cette semaine 🎂"
+• Propose des "objectifs" : "Si j'atteins 500€ de tips ce mois, je poste [contenu spécial]"
+
+⏰ Les horaires
+• Les meilleurs moments : 20h-23h en semaine, 11h-14h le week-end
+• Réponds dans les 30 minutes sur ces créneaux`,
+        tip: "💡 Un abonné qui se sent spécial peut facilement dépenser 50-200€/mois sur un seul compte. Le chatting, c'est de la vente émotionnelle."
+      },
+      {
+        title: "Gérer une équipe de chatteurs",
+        content: `Quand tu gères plusieurs modèles, tu ne peux pas chatter seul. Tu dois déléguer.
+
+👥 Comment recruter un chatteur :
+• Plateformes : LinkedIn, groupes Facebook OFM, Discord spécialisés
+• Profil idéal : à l'aise à l'écrit, empathique, disponible le soir
+• Attention : ils auront accès aux comptes. Confiance = essentielle
+
+💼 La rémunération d'un chatteur :
+• Option 1 : Pourcentage (8-15% des revenus du compte géré)
+• Option 2 : Salaire fixe + bonus sur performance
+• Fais signer un contrat de confidentialité OBLIGATOIREMENT
+
+📋 Les outils pour gérer une équipe :
+• INFLOW ou OFFMY : logiciels de gestion OFM
+• Notion ou Trello : pour les procédures et les scripts
+• Telegram ou Discord privé : communication interne
+
+📊 Comment former ton chatteur :
+1. Crée un guide de marque (ton, vocabulaire à utiliser, sujets interdits)
+2. Fournis des scripts pour les situations récurrentes
+3. Fais un suivi hebdomadaire des performances`,
+        tip: "💡 Ne donne jamais un accès complet au compte à un nouveau chatteur. Commence avec un accès limité aux messages, sans accès aux paiements."
+      }
+    ]
+  },
+  {
+    id: 5, emoji: "📱", title: "Marketing & Promotion", subtitle: "Faire grandir l'audience", color: "#D97706",
+    lessons: [
+      {
+        title: "La stratégie réseaux sociaux",
+        content: `OnlyFans ne génère aucun trafic organique. TOUT doit venir de l'extérieur. C'est là que ton rôle est crucial.
+
+📱 Les plateformes par ordre d'efficacité :
+
+🥇 TikTok (meilleur ROI)
+• Contenus courts (15-60s), tendances, transitions
+• Pas de nudité mais contenu suggestif/lifestyle autorisé
+• Algorithme qui push les nouveaux créateurs = opportunité
+
+🥈 Instagram
+• Reels > Stories > Posts
+• Collaboration avec d'autres créateurs (collab posts)
+• Bio optimisée avec lien Linktree vers OF
+
+🥉 Twitter/X
+• Le seul réseau qui autorise du contenu explicite
+• Très bonne communauté OF
+• Permet de convertir directement
+
+🎯 Stratégie de contenu :
+• 1 TikTok par jour minimum
+• 3-5 Stories Instagram par jour
+• 1 Reel Instagram par semaine
+• 3-5 tweets par jour
+
+⚠️ Règle d'or : Les réseaux sociaux sont des vitrines. OnlyFans est la boutique. Ne mets JAMAIS le meilleur contenu sur les réseaux.`,
+        tip: "💡 Crée un calendrier éditorial pour chaque modèle. La régularité bat l'inspiration ponctuelle."
+      },
+      {
+        title: "Optimiser le profil OnlyFans",
+        content: `Avant de faire de la promotion, le profil doit convertir au maximum.
+
+🖼️ Les éléments clés du profil :
+
+📸 Photo de profil
+• Haute qualité, sourire, regard direct
+• Attirante mais pas vulgaire (pour attirer les bons abonnés)
+
+📝 Bio (150-200 caractères max)
+• Qui est le modèle en 1 phrase
+• Ce que les abonnés vont trouver
+• Call to action : "Abonne-toi pour..."
+• Ajouter des emojis strategiques 🔥💋
+
+💰 Le prix de l'abonnement
+• Gratuit avec revenus en PPV : attire plus d'abonnés, monétise via DMs
+• Payant (5-15€/mois) : abonnés plus engagés et qualifiés
+• Stratégie recommandée pour débuter : 7 jours gratuits puis payant
+
+📦 Le contenu d'accueil
+• Dès qu'un abonné s'inscrit, envoie un message de bienvenue personnalisé
+• Propose immédiatement un PPV "bienvenue" à prix réduit
+• Fixe les attentes : "Je poste X fois par semaine"`,
+        tip: "💡 Un profil qui convertit à 5-10% (sur 100 visiteurs, 5-10 s'abonnent) est un bon résultat. Optimise jusqu'à atteindre ce taux."
+      },
+      {
+        title: "Les campagnes de promotion",
+        content: `Pour accélérer la croissance, utilise ces stratégies de promotion :
+
+🤝 Les collabs entre créateurs
+• Shoutout for Shoutout (S4S) : chaque créateur promeut l'autre
+• Collab content : créer du contenu ensemble (très performant)
+• Trouver des créateurs dans la même niche avec une audience similaire
+
+📣 Les mass DMs
+• Envoyer un message promotionnel à tous les abonnés en même temps
+• Timing : le dimanche soir ou le vendredi soir
+• Exemple : "🎁 Promo 48h : -30% sur mon pack du mois"
+
+🔗 Le Linktree / Link in bio
+• Centralise tous les liens (OF, Instagram, Twitter, Telegram)
+• Ajoute un aperçu de contenu pour donner envie
+• Teste différentes formulations pour le CTA
+
+📊 Le suivi des performances
+Analyse chaque semaine :
+• Nombre de nouveaux abonnés
+• Taux de rétention (combien renouvellent)
+• Revenu moyen par abonné
+• Taux de conversion des PPV
+• Sources de trafic`,
+        tip: "💡 La rétention est plus importante que l'acquisition. Garder un abonné coûte 5x moins cher que d'en trouver un nouveau."
+      }
+    ]
+  },
+  {
+    id: 6, emoji: "📈", title: "Scaler ton agence", subtitle: "Passer à l'échelle", color: "#7C3AED",
+    lessons: [
+      {
+        title: "De 1 à 5 modèles",
+        content: `Une fois ton premier modèle stable et rentable, tu peux commencer à scaler.
+
+🎯 Les étapes pour passer à 5 modèles :
+
+1️⃣ Documente tout
+• Crée des procédures écrites pour chaque tâche
+• Tes succès avec le premier modèle sont tes preuves sociales
+• Garde des captures d'écran de tes résultats (chiffres anonymisés)
+
+2️⃣ Améliore ton pitch
+• Tu n'es plus un débutant : tu as des résultats concrets
+• "J'ai amené un modèle de 0 à 2 000€/mois en 6 semaines" = crédibilité
+
+3️⃣ Recrute une aide
+• Un chatteur pour gérer les DMs
+• Ça libère ton temps pour recruter de nouveaux modèles
+
+4️⃣ Standardise tes processus
+• Même process d'onboarding pour chaque nouveau modèle
+• Templates de contenu, scripts de chatting, planning éditorial
+
+📊 Objectif financier :
+3 modèles à 3 000€/mois chacun × 25% = 2 250€/mois
+5 modèles à 4 000€/mois chacun × 25% = 5 000€/mois`,
+        tip: "💡 Ne recrute jamais un nouveau modèle si tu n'as pas les ressources pour bien le gérer. Mieux vaut 3 modèles bien gérés que 10 gérés à moitié."
+      },
+      {
+        title: "Créer une vraie agence",
+        content: `Pour passer de freelance à agence, il faut structurer et déléguer.
+
+🏢 Les postes clés d'une agence OFM :
+
+👤 Toi (le dirigeant)
+• Recrutement des modèles
+• Stratégie globale
+• Gestion des partenariats
+• Finances
+
+💬 L'équipe chatting (1 chatteur par 3-4 modèles)
+• Gestion quotidienne des DMs
+• Envoi des PPV et mass DMs
+• Reporting hebdomadaire
+
+📱 Le/la community manager
+• Gestion des réseaux sociaux (TikTok, Instagram)
+• Création de contenu (montage, stories)
+• Planification éditoriale
+
+📊 L'analyste (optionnel au début)
+• Suivi des KPIs de chaque compte
+• Optimisation des prix
+• Tests A/B sur les approches
+
+🛠️ Les outils de l'agence :
+• INFLOW ou OFFMY : gestion centralisée des comptes OF
+• Notion : procédures et documentation
+• Slack/Discord : communication d'équipe
+• Google Sheets : reporting financier`,
+        tip: "💡 La différence entre un freelance et une agence, c'est les systèmes. Documente tout dès le premier jour."
+      },
+      {
+        title: "Les erreurs à éviter absolument",
+        content: `Apprends des erreurs des autres avant de les faire toi-même.
+
+❌ Les erreurs fatales :
+
+🚫 Travailler sans contrat
+→ Tu risques de tout perdre du jour au lendemain. Toujours un contrat signé.
+
+🚫 Promettre des chiffres irréalistes
+→ Sous-promets et sur-livre. Promettre 10 000€/mois à une débutante = perte de crédibilité garantie.
+
+🚫 Ne pas vérifier l'identité des modèles
+→ Demande toujours une pièce d'identité. Obligatoire légalement sur OF, et essentiel pour toi.
+
+🚫 Négliger la confidentialité
+→ Ne partage JAMAIS d'infos sur tes modèles. Discrétion totale = confiance.
+
+🚫 Tout faire seul trop longtemps
+→ Si tu ne délègues pas le chatting, tu seras noyé. Délègue dès le 2e modèle.
+
+🚫 Ignorer les impôts
+→ L'argent reçu via Virement/PayPal est traçable. Déclare tout, fais-le légalement.
+
+🚫 Croire aux résultats overnight
+→ Les vrais résultats arrivent après 2-3 mois de travail sérieux. Persévère.
+
+✅ La mentalité gagnante :
+Traite chaque modèle comme une startup dont tu es le directeur marketing. Investis du temps, mesure les résultats, ajuste.`,
+        tip: "💡 Le succès en OFM = recrutement + chatting + marketing + rigueur légale. Manquer un seul pilier = agence fragile."
+      }
+    ]
+  }
+];
+
+const totalLessons = modules.reduce((a, m) => a + m.lessons.length, 0);
+let completed = {};
+let curModule = 0;
+let curLesson = 0;
+
+function getLineColor(line, color) {
+  if (line.startsWith("•") || line.startsWith("→")) return "#C4B5FD";
+  if (line.includes("❌") || line.includes("⚠️") || line.includes("🚫")) return "#FCA5A5";
+  if (line.includes("✅") || line.includes("✓")) return "#86EFAC";
+  if (line.includes("📌") || line.includes("🥇") || line.includes("🥈") || line.includes("🥉")) return "#FDE68A";
+  return "#D1D5DB";
+}
+
+function updateProgress() {
+  const count = Object.keys(completed).length;
+  const pct = Math.round((count / totalLessons) * 100);
+  document.getElementById("lbl-count").textContent = `${count}/${totalLessons} leçons`;
+  document.getElementById("lbl-pct").textContent = `${pct}%`;
+  document.getElementById("progress-bar").style.width = pct + "%";
+  document.getElementById("stat-done").textContent = count;
+}
+
+function renderModuleCards() {
+  const container = document.getElementById("module-cards");
+  container.innerHTML = "";
+  modules.forEach((mod, idx) => {
+    const done = mod.lessons.filter((_, i) => completed[`${mod.id}-${i}`]).length;
+    const fullDone = done === mod.lessons.length;
+    const pct = Math.round((done / mod.lessons.length) * 100);
+
+    const card = document.createElement("div");
+    card.className = "module-card" + (fullDone ? " done" : "");
+    card.onclick = () => openModule(idx);
+    card.innerHTML = `
+      <div class="module-inner">
+        <div class="module-icon" style="background:${mod.color}22">${mod.emoji}</div>
+        <div class="module-meta">
+          <div class="module-tag" style="color:${mod.color}">
+            MODULE ${mod.id}
+            ${fullDone ? '<span class="module-done-badge">✓ Terminé</span>' : ""}
+          </div>
+          <div class="module-title">${mod.title}</div>
+          <div class="module-sub">${mod.subtitle} · ${mod.lessons.length} leçons</div>
+        </div>
+        <div class="module-count">
+          <div class="module-count-val" style="color:${done > 0 ? mod.color : "#4B5563"}">${done}/${mod.lessons.length}</div>
+          <div class="module-count-lbl">leçons</div>
+        </div>
+      </div>
+      <div class="module-progress">
+        <div class="module-progress-fill" style="width:${pct}%;background:${mod.color}"></div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function openModule(idx) {
+  curModule = idx;
+  curLesson = 0;
+  document.getElementById("home-view").style.display = "none";
+  document.getElementById("lesson-view").style.display = "block";
+  renderLesson();
+}
+
+function goHome() {
+  document.getElementById("lesson-view").style.display = "none";
+  document.getElementById("home-view").style.display = "block";
+  renderModuleCards();
+  updateProgress();
+}
+
+function renderLesson() {
+  const mod = modules[curModule];
+  const lesson = mod.lessons[curLesson];
+  const key = `${mod.id}-${curLesson}`;
+  const isDone = !!completed[key];
+
+  // Header
+  document.getElementById("lesson-header").style.background = mod.color;
+  document.getElementById("lh-module").textContent = `${mod.emoji} ${mod.title}`;
+  document.getElementById("lh-title").textContent = lesson.title;
+
+  // Nav tabs
+  const nav = document.getElementById("lesson-nav");
+  nav.innerHTML = "";
+  mod.lessons.forEach((l, i) => {
+    const k = `${mod.id}-${i}`;
+    const btn = document.createElement("button");
+    btn.className = "lesson-nav-btn";
+    btn.textContent = (completed[k] ? "✓" : (i + 1)) + ". " + l.title.split(" ").slice(0, 2).join(" ") + "...";
+    btn.style.background = curLesson === i ? mod.color : (completed[k] ? "#1e3a2e" : "#2A2A3E");
+    btn.style.color = curLesson === i ? "#fff" : (completed[k] ? "#4ade80" : "#888");
+    btn.onclick = () => { curLesson = i; renderLesson(); };
+    nav.appendChild(btn);
+  });
+
+  // Content
+  document.getElementById("lc-title").textContent = lesson.title;
+  document.getElementById("lesson-body").style.borderLeftColor = mod.color;
+
+  const body = document.getElementById("lesson-body");
+  body.innerHTML = "";
+  lesson.content.split("\n").forEach(line => {
+    const p = document.createElement("p");
+    p.textContent = line;
+    if (line === "") p.className = "empty";
+    p.style.color = getLineColor(line, mod.color);
+    body.appendChild(p);
+  });
+
+  document.getElementById("lc-tip").textContent = lesson.tip;
+
+  // Buttons
+  const btnPrev = document.getElementById("btn-prev");
+  const btnDone = document.getElementById("btn-done");
+  const btnNext = document.getElementById("btn-next");
+  const btnFinish = document.getElementById("btn-finish");
+
+  btnPrev.disabled = curLesson === 0;
+  btnDone.style.display = isDone ? "none" : "flex";
+  btnNext.style.display = (isDone && curLesson < mod.lessons.length - 1) ? "flex" : "none";
+  btnFinish.style.display = (isDone && curLesson === mod.lessons.length - 1) ? "flex" : "none";
+  btnNext.style.background = `linear-gradient(135deg, ${mod.color}, ${mod.color}cc)`;
+}
+
+function markDone() {
+  const mod = modules[curModule];
+  const key = `${mod.id}-${curLesson}`;
+  completed[key] = true;
+  renderLesson();
+}
+
+function prevLesson() {
+  if (curLesson > 0) { curLesson--; renderLesson(); }
+}
+
+function nextLesson() {
+  const mod = modules[curModule];
+  if (curLesson < mod.lessons.length - 1) { curLesson++; renderLesson(); }
+}
+
+// Init
+renderModuleCards();
+updateProgress();
+</script>
+</body>
+</html>
